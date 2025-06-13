@@ -2,8 +2,12 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"temperaturemonitor/api/endpoints"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 func greet(w http.ResponseWriter, r *http.Request) {
@@ -11,7 +15,16 @@ func greet(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	fmt.Println("Hello world")
-	http.HandleFunc("/", greet)
-	http.ListenAndServe(":8080", nil)
+	e := endpoints.Endpoints{}
+
+	r := gin.Default()
+
+	endpoints.RegisterHandlers(r, e)
+
+	s := &http.Server{
+		Handler: r,
+		Addr:    "0.0.0.0:8080",
+	}
+
+	log.Fatal(s.ListenAndServe())
 }
