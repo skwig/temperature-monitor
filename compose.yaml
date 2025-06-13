@@ -1,7 +1,7 @@
 ﻿services:
-  temperaturemonitor.webapi:
-    image: temperaturemonitor.webapi
+  temperaturemonitor.api:
+    image: temperaturemonitor.api
     build:
-      context: .
-      dockerfile: TemperatureMonitor.WebApi/Dockerfile
+      context: api
+      dockerfile: Dockerfile
 
