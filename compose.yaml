@@ -8,4 +8,6 @@
       - 8080:8080
     environment:
       GIN_MODE: release
+    volumes:
+      - /home/skwig/Projects/TemperatureMonitor/db/:/app/db/
 

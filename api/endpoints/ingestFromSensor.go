@@ -4,6 +4,8 @@ import (
 	"log"
 	"net/http"
 
+	"temperaturemonitor/api/sql"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,7 +16,23 @@ func (e *Endpoints) IngestFromSensor(c *gin.Context) {
 		c.Status(http.StatusBadRequest)
 	}
 
+	respository, err := sql.NewDefaultSqliteRepository()
+	if err != nil {
+		log.Println(err)
+	}
+
 	log.Printf("%+v\n", requestBody)
+
+	reading := sql.SensorReading{
+		Session:     requestBody.Session,
+		SensorTime:  requestBody.SensorTime,
+		Temperature: requestBody.Temperature,
+		Humidity:    requestBody.Humidity}
+
+	err = respository.Save(&reading)
+	if err != nil {
+		log.Println(err)
+	}
 
 	c.Status(http.StatusOK)
 }
