@@ -8,21 +8,46 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	strictgin "github.com/oapi-codegen/runtime/strictmiddleware/gin"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
-// HelloResponse defines model for HelloResponse.
-type HelloResponse struct {
-	Message *string `json:"message,omitempty"`
+// IngestFromSensorRequest defines model for IngestFromSensorRequest.
+type IngestFromSensorRequest struct {
+	// Humidity Relative humidity in percentage
+	Humidity   float32 `json:"humidity"`
+	SensorTime string  `json:"sensorTime"`
+	Session    string  `json:"session"`
+
+	// Temperature Temperature in celsius
+	Temperature float32 `json:"temperature"`
 }
+
+// TimeSeriesEntry defines model for TimeSeriesEntry.
+type TimeSeriesEntry struct {
+	// Humidity Relative humidity in percentage
+	Humidity   float32            `json:"humidity"`
+	SensorTime time.Time          `json:"sensorTime"`
+	Session    openapi_types.UUID `json:"session"`
+
+	// Temperature Temperature in celsius
+	Temperature float32 `json:"temperature"`
+}
+
+// IngestFromSensorJSONRequestBody defines body for IngestFromSensor for application/json ContentType.
+type IngestFromSensorJSONRequestBody = IngestFromSensorRequest
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
-	// Returns a Hello World message
-	// (GET /hello)
-	GetHello(c *gin.Context)
+
+	// (GET /grafana/timeseries)
+	GetGrafanaTimeSeries(c *gin.Context)
+
+	// (PUT /sensor/ingest)
+	IngestFromSensor(c *gin.Context)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -34,8 +59,8 @@ type ServerInterfaceWrapper struct {
 
 type MiddlewareFunc func(c *gin.Context)
 
-// GetHello operation middleware
-func (siw *ServerInterfaceWrapper) GetHello(c *gin.Context) {
+// GetGrafanaTimeSeries operation middleware
+func (siw *ServerInterfaceWrapper) GetGrafanaTimeSeries(c *gin.Context) {
 
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
@@ -44,7 +69,20 @@ func (siw *ServerInterfaceWrapper) GetHello(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.GetHello(c)
+	siw.Handler.GetGrafanaTimeSeries(c)
+}
+
+// IngestFromSensor operation middleware
+func (siw *ServerInterfaceWrapper) IngestFromSensor(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.IngestFromSensor(c)
 }
 
 // GinServerOptions provides options for the Gin server.
@@ -74,30 +112,50 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 		ErrorHandler:       errorHandler,
 	}
 
-	router.GET(options.BaseURL+"/hello", wrapper.GetHello)
+	router.GET(options.BaseURL+"/grafana/timeseries", wrapper.GetGrafanaTimeSeries)
+	router.PUT(options.BaseURL+"/sensor/ingest", wrapper.IngestFromSensor)
 }
 
-type GetHelloRequestObject struct {
+type GetGrafanaTimeSeriesRequestObject struct {
 }
 
-type GetHelloResponseObject interface {
-	VisitGetHelloResponse(w http.ResponseWriter) error
+type GetGrafanaTimeSeriesResponseObject interface {
+	VisitGetGrafanaTimeSeriesResponse(w http.ResponseWriter) error
 }
 
-type GetHello200JSONResponse HelloResponse
+type GetGrafanaTimeSeries200JSONResponse []TimeSeriesEntry
 
-func (response GetHello200JSONResponse) VisitGetHelloResponse(w http.ResponseWriter) error {
+func (response GetGrafanaTimeSeries200JSONResponse) VisitGetGrafanaTimeSeriesResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
+type IngestFromSensorRequestObject struct {
+	Body *IngestFromSensorJSONRequestBody
+}
+
+type IngestFromSensorResponseObject interface {
+	VisitIngestFromSensorResponse(w http.ResponseWriter) error
+}
+
+type IngestFromSensor200Response struct {
+}
+
+func (response IngestFromSensor200Response) VisitIngestFromSensorResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
-	// Returns a Hello World message
-	// (GET /hello)
-	GetHello(ctx context.Context, request GetHelloRequestObject) (GetHelloResponseObject, error)
+
+	// (GET /grafana/timeseries)
+	GetGrafanaTimeSeries(ctx context.Context, request GetGrafanaTimeSeriesRequestObject) (GetGrafanaTimeSeriesResponseObject, error)
+
+	// (PUT /sensor/ingest)
+	IngestFromSensor(ctx context.Context, request IngestFromSensorRequestObject) (IngestFromSensorResponseObject, error)
 }
 
 type StrictHandlerFunc = strictgin.StrictGinHandlerFunc
@@ -112,15 +170,15 @@ type strictHandler struct {
 	middlewares []StrictMiddlewareFunc
 }
 
-// GetHello operation middleware
-func (sh *strictHandler) GetHello(ctx *gin.Context) {
-	var request GetHelloRequestObject
+// GetGrafanaTimeSeries operation middleware
+func (sh *strictHandler) GetGrafanaTimeSeries(ctx *gin.Context) {
+	var request GetGrafanaTimeSeriesRequestObject
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.GetHello(ctx, request.(GetHelloRequestObject))
+		return sh.ssi.GetGrafanaTimeSeries(ctx, request.(GetGrafanaTimeSeriesRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetHello")
+		handler = middleware(handler, "GetGrafanaTimeSeries")
 	}
 
 	response, err := handler(ctx, request)
@@ -128,8 +186,41 @@ func (sh *strictHandler) GetHello(ctx *gin.Context) {
 	if err != nil {
 		ctx.Error(err)
 		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(GetHelloResponseObject); ok {
-		if err := validResponse.VisitGetHelloResponse(ctx.Writer); err != nil {
+	} else if validResponse, ok := response.(GetGrafanaTimeSeriesResponseObject); ok {
+		if err := validResponse.VisitGetGrafanaTimeSeriesResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// IngestFromSensor operation middleware
+func (sh *strictHandler) IngestFromSensor(ctx *gin.Context) {
+	var request IngestFromSensorRequestObject
+
+	var body IngestFromSensorJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.IngestFromSensor(ctx, request.(IngestFromSensorRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "IngestFromSensor")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(IngestFromSensorResponseObject); ok {
+		if err := validResponse.VisitIngestFromSensorResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {
