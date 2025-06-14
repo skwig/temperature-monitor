@@ -59,6 +59,7 @@ components:
       type: object
       required:
         - session
+        - serverTime
         - sensorTime
         - temperature
         - humidity
@@ -67,6 +68,10 @@ components:
           type: string
           format: uuid
           example: f5f0e416-9144-4359-86ba-f326ff21541d
+        serverTime:
+          type: string
+          format: date-time
+          example: 2025-06-01T00:00:00Z
         sensorTime:
           type: string
           format: date-time

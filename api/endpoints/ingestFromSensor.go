@@ -3,6 +3,7 @@ package endpoints
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"temperaturemonitor/api/sql"
 
@@ -14,17 +15,19 @@ func (e *Endpoints) IngestFromSensor(c *gin.Context) {
 	var requestBody IngestFromSensorJSONRequestBody
 	if err := c.BindJSON(&requestBody); err != nil {
 		c.Status(http.StatusBadRequest)
+		return
 	}
 
 	respository, err := sql.NewDefaultSqliteRepository()
 	if err != nil {
 		log.Println(err)
+		c.Status(http.StatusInternalServerError)
+		return
 	}
-
-	log.Printf("%+v\n", requestBody)
 
 	reading := sql.SensorReading{
 		Session:        requestBody.Session,
+		ServerTimeUnix: time.Now().UTC().Unix(),
 		SensorTimeUnix: requestBody.SensorTime.Unix(),
 		Temperature:    requestBody.Temperature,
 		Humidity:       requestBody.Humidity}
@@ -32,6 +35,8 @@ func (e *Endpoints) IngestFromSensor(c *gin.Context) {
 	err = respository.Save(&reading)
 	if err != nil {
 		log.Println(err)
+		c.Status(http.StatusInternalServerError)
+		return
 	}
 
 	c.Status(http.StatusOK)

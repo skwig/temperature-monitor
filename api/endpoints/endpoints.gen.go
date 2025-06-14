@@ -31,6 +31,7 @@ type TimeSeriesEntry struct {
 	// Humidity Relative humidity in percentage
 	Humidity   float32            `json:"humidity"`
 	SensorTime time.Time          `json:"sensorTime"`
+	ServerTime time.Time          `json:"serverTime"`
 	Session    openapi_types.UUID `json:"session"`
 
 	// Temperature Temperature in celsius

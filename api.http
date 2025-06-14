@@ -1,4 +1,8 @@
-PUT http://192.168.100.7:8080/sensor/ingest
+@host = blackbox.nidus:8080
+
+###
+
+PUT http://{{host}}/sensor/ingest
 Accept: application/json
 Content-Type: application/json
 
@@ -8,3 +12,8 @@ Content-Type: application/json
   "temperature": 28.5,
   "humidity": 10
 }
+
+###
+
+GET http://{{host}}/grafana/timeseries
+Accept: application/json
