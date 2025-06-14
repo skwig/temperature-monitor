@@ -4,7 +4,7 @@ Content-Type: application/json
 
 {
   "session": "2AE78509-BDDF-49F0-9997-756416CE6C3C",
-  "sensorTime": "2025-06-07T14:35:00+02:00",
+  "sensorTime": "2025-06-07T14:35:00Z",
   "temperature": 28.5,
   "humidity": 10
 }

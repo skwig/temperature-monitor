@@ -1,5 +1,4 @@
 import time
-from typing import Tuple
 
 import dht
 import machine
@@ -11,7 +10,7 @@ import urandom
 ssid = ""
 password = ""
 
-ingestion_url = "http://192.168.100.7:8080/ingest"
+ingestion_url = "http://blackbox.nidus:8080/sensor/ingest"
 
 sensing_period_seconds = 5
 
@@ -30,7 +29,7 @@ def generate_uuid4():
     return f"{uuid[0:8]}-{uuid[8:12]}-{uuid[12:16]}-{uuid[16:20]}-{uuid[20:32]}"
 
 
-def readTemperatureAndPressure(sensor: dht.DHT22) -> Tuple[float, float]:
+def readTemperatureAndPressure(sensor: dht.DHT22) -> [float, float]:
     sensor.measure()
     temperature = sensor.temperature()
     humiditiy = sensor.humidity()
@@ -50,7 +49,7 @@ sensor = dht.DHT22(machine.Pin(22))
 led = machine.Pin("LED", machine.Pin.OUT)
 
 led.high()
-# connect(ssid, password)
+connect(ssid, password)
 led.low()
 
 session = generate_uuid4()
@@ -59,7 +58,7 @@ while True:
     led.high()
 
     now = time.localtime()
-    sensor_time = "%04d-%02d-%02dT%02d:%02d:%02d.000" % (now[0:6])
+    sensor_time = "%04d-%02d-%02dT%02d:%02d:%02d.000Z" % (now[0:6])
 
     (temperature, humidity) = readTemperatureAndPressure(sensor)
 
@@ -72,21 +71,21 @@ while True:
 
     print("Request body: ", request_body)
 
-    # try:
-    #     response = requests.put(
-    #         ingestion_url,
-    #         json=request_body,
-    #     )
-    #
-    #     response_code = response.status_code
-    #     response_content = response.content
-    #
-    #     print("Response code: ", response_code)
-    #     print("Response content:", response_content)
-    #
-    #     print()
-    # except:
-    #     print("Failed sending")
+    try:
+        response = requests.put(
+            ingestion_url,
+            json=request_body,
+        )
+
+        response_code = response.status_code
+        response_content = response.content
+
+        print("Response code: ", response_code)
+        print("Response content:", response_content)
+
+        print()
+    except:
+        print("Failed sending")
 
     led.low()
 

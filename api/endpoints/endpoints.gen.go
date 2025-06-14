@@ -18,9 +18,9 @@ import (
 // IngestFromSensorRequest defines model for IngestFromSensorRequest.
 type IngestFromSensorRequest struct {
 	// Humidity Relative humidity in percentage
-	Humidity   float32 `json:"humidity"`
-	SensorTime string  `json:"sensorTime"`
-	Session    string  `json:"session"`
+	Humidity   float32            `json:"humidity"`
+	SensorTime time.Time          `json:"sensorTime"`
+	Session    openapi_types.UUID `json:"session"`
 
 	// Temperature Temperature in celsius
 	Temperature float32 `json:"temperature"`

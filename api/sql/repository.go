@@ -1,16 +1,17 @@
 package sql
 
 import (
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 )
 
 type SensorReading struct {
-	Id          int64   `db:"id"`
-	Session     string  `db:"session"`
-	SensorTime  string  `db:"sensorTime"`
-	Temperature float32 `db:"temperature"`
-	Humidity    float32 `db:"humidity"`
+	Id             int64     `db:"id"`
+	Session        uuid.UUID `db:"session"`
+	SensorTimeUnix int64     `db:"sensorTime"`
+	Temperature    float32   `db:"temperature"`
+	Humidity       float32   `db:"humidity"`
 }
 
 type Repository interface {
@@ -49,7 +50,7 @@ func (repo *SqliteRepository) Setup() error {
 		CREATE TABLE IF NOT EXISTS sensor_readings (
 			id           INTEGER PRIMARY KEY,
 			session      TEXT,
-			sensor_time  TEXT,
+			sensor_time  INTEGER,
 			temperature  REAL,
 			humidity     REAL
 		);
@@ -65,7 +66,7 @@ func (repo *SqliteRepository) Save(reading *SensorReading) error {
 	tx := repo.db.MustBegin()
 
 	result := tx.MustExec("INSERT INTO sensor_readings (session, sensor_time, temperature, humidity) VALUES ($1, $2, $3, $4)",
-		reading.Session, reading.SensorTime, reading.Temperature, reading.Humidity)
+		reading.Session, reading.SensorTimeUnix, reading.Temperature, reading.Humidity)
 	id, err := result.LastInsertId()
 	if err != nil {
 		return err

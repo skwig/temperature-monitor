@@ -24,10 +24,10 @@ func (e *Endpoints) IngestFromSensor(c *gin.Context) {
 	log.Printf("%+v\n", requestBody)
 
 	reading := sql.SensorReading{
-		Session:     requestBody.Session,
-		SensorTime:  requestBody.SensorTime,
-		Temperature: requestBody.Temperature,
-		Humidity:    requestBody.Humidity}
+		Session:        requestBody.Session,
+		SensorTimeUnix: requestBody.SensorTime.Unix(),
+		Temperature:    requestBody.Temperature,
+		Humidity:       requestBody.Humidity}
 
 	err = respository.Save(&reading)
 	if err != nil {

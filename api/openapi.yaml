@@ -39,11 +39,11 @@ components:
       properties:
         session:
           type: string
-          # format: uuid
+          format: uuid
           example: f5f0e416-9144-4359-86ba-f326ff21541d
         sensorTime:
           type: string
-          # format: date-time
+          format: date-time
           example: 2025-06-01T00:00:00Z
         temperature:
           type: number
