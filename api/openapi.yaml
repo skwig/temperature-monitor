@@ -1,26 +1,83 @@
-openapi: "3.0.3"
+openapi: "3.0"
 info:
   title: Hello World API
   version: "1.0.0"
 
 paths:
-  /hello:
-    get:
-      summary: Returns a Hello World message
-      operationId: getHello
+  /sensor/ingest:
+    put:
+      operationId: ingestFromSensor
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IngestFromSensorRequest"
       responses:
         "200":
-          description: A greeting message
+          description: Successfully ingested
+  /grafana/timeseries:
+    get:
+      operationId: getGrafanaTimeSeries
+      responses:
+        "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HelloResponse"
+                type: array
+                items:
+                  $ref: "#/components/schemas/TimeSeriesEntry"
 
 components:
   schemas:
-    HelloResponse:
+    IngestFromSensorRequest:
       type: object
+      required:
+        - session
+        - sensorTime
+        - temperature
+        - humidity
       properties:
-        message:
+        session:
           type: string
-          example: Hello, World!
+          # format: uuid
+          example: f5f0e416-9144-4359-86ba-f326ff21541d
+        sensorTime:
+          type: string
+          # format: date-time
+          example: 2025-06-01T00:00:00Z
+        temperature:
+          type: number
+          format: float
+          description: Temperature in celsius
+          example: 20.5
+        humidity:
+          type: number
+          format: float
+          description: Relative humidity in percentage
+          example: 60.5
+    TimeSeriesEntry:
+      type: object
+      required:
+        - session
+        - sensorTime
+        - temperature
+        - humidity
+      properties:
+        session:
+          type: string
+          format: uuid
+          example: f5f0e416-9144-4359-86ba-f326ff21541d
+        sensorTime:
+          type: string
+          format: date-time
+          example: 2025-06-01T00:00:00Z
+        temperature:
+          type: number
+          format: float
+          description: Temperature in celsius
+          example: 20.5
+        humidity:
+          type: number
+          format: float
+          description: Relative humidity in percentage
+          example: 60.5
