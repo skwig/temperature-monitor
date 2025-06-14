@@ -29,13 +29,12 @@ type IngestFromSensorRequest struct {
 // TimeSeriesEntry defines model for TimeSeriesEntry.
 type TimeSeriesEntry struct {
 	// Humidity Relative humidity in percentage
-	Humidity   float32            `json:"humidity"`
-	SensorTime time.Time          `json:"sensorTime"`
-	ServerTime time.Time          `json:"serverTime"`
-	Session    openapi_types.UUID `json:"session"`
+	Humidity float32            `json:"humidity"`
+	Session  openapi_types.UUID `json:"session"`
 
 	// Temperature Temperature in celsius
-	Temperature float32 `json:"temperature"`
+	Temperature float32   `json:"temperature"`
+	Time        time.Time `json:"time"`
 }
 
 // IngestFromSensorJSONRequestBody defines body for IngestFromSensor for application/json ContentType.

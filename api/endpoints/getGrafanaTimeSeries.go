@@ -29,8 +29,7 @@ func (e *Endpoints) GetGrafanaTimeSeries(c *gin.Context) {
 	response := sf.Map(items, func(item sql.SensorReading) TimeSeriesEntry {
 		return TimeSeriesEntry{
 			Humidity:    item.Humidity,
-			ServerTime:  time.Unix(item.ServerTimeUnix, 0),
-			SensorTime:  time.Unix(item.SensorTimeUnix, 0),
+			Time:        time.Unix(item.ServerTimeUnix, 0),
 			Session:     item.Session,
 			Temperature: item.Temperature}
 	})

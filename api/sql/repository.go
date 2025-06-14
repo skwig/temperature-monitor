@@ -8,8 +8,8 @@ import (
 type SensorReading struct {
 	Id             int64     `db:"id"`
 	Session        uuid.UUID `db:"session"`
-	SensorTimeUnix int64     `db:"sensor_time"`
 	ServerTimeUnix int64     `db:"server_time"`
+	SensorTimeUnix int64     `db:"sensor_time"`
 	Temperature    float32   `db:"temperature"`
 	Humidity       float32   `db:"humidity"`
 }
