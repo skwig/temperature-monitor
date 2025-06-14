@@ -1,5 +1,7 @@
 import time
+from typing import Tuple
 
+import dht
 import machine
 import network
 import requests
@@ -8,6 +10,8 @@ import urandom
 
 ssid = ""
 password = ""
+
+ingestion_url = "http://192.168.100.7:8080/ingest"
 
 sensing_period_seconds = 5
 
@@ -26,11 +30,11 @@ def generate_uuid4():
     return f"{uuid[0:8]}-{uuid[8:12]}-{uuid[12:16]}-{uuid[16:20]}-{uuid[20:32]}"
 
 
-def readTemperature(sensor) -> float:
-    adc_value = sensor.read_u16()
-    volt = (3.3 / 65535) * adc_value
-    temperature = 27 - (volt - 0.706) / 0.001721
-    return round(temperature, 1)
+def readTemperatureAndPressure(sensor: dht.DHT22) -> Tuple[float, float]:
+    sensor.measure()
+    temperature = sensor.temperature()
+    humiditiy = sensor.humidity()
+    return (temperature, humiditiy)
 
 
 def connect(ssid, password):
@@ -42,11 +46,11 @@ def connect(ssid, password):
         time.sleep(1)
 
 
-sensor = machine.ADC(4)
+sensor = dht.DHT22(machine.Pin(22))
 led = machine.Pin("LED", machine.Pin.OUT)
 
 led.high()
-connect(ssid, password)
+# connect(ssid, password)
 led.low()
 
 session = generate_uuid4()
@@ -55,34 +59,34 @@ while True:
     led.high()
 
     now = time.localtime()
-    sensor_time = "%04d-%02d-%02dT%02d:%02d:%02d.000" % (timestamp[0:6])
+    sensor_time = "%04d-%02d-%02dT%02d:%02d:%02d.000" % (now[0:6])
 
-    temperature = readTemperature(sensor)
+    (temperature, humidity) = readTemperatureAndPressure(sensor)
 
     request_body = {
         "session": session,
         "sensorTime": sensor_time,
         "temperature": temperature,
-        "pressure": 0,
+        "humidity": humidity,
     }
 
     print("Request body: ", request_body)
 
-    try:
-        response = requests.put(
-            "http://192.168.100.7:8080/sensors/ingest",
-            json=request_body,
-        )
-
-        response_code = response.status_code
-        response_content = response.content
-
-        print("Response code: ", response_code)
-        print("Response content:", response_content)
-
-        print()
-    except:
-        print("Failed sending")
+    # try:
+    #     response = requests.put(
+    #         ingestion_url,
+    #         json=request_body,
+    #     )
+    #
+    #     response_code = response.status_code
+    #     response_content = response.content
+    #
+    #     print("Response code: ", response_code)
+    #     print("Response content:", response_content)
+    #
+    #     print()
+    # except:
+    #     print("Failed sending")
 
     led.low()
 
