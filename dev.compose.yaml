@@ -1,5 +1,4 @@
-﻿version: "3"
-services:
+﻿services:
   temperaturemonitor.api:
     image: temperaturemonitor.api
     build:
@@ -11,7 +10,7 @@ services:
     environment:
       GIN_MODE: release
     volumes:
-      - "/home/pi/Projects/TemperatureMonitor-app-data/:/app/db/"
+      - ./db/:/app/db/
   temperaturemonitor.grafana:
     image: grafana/grafana:12.0.1
     restart: unless-stopped

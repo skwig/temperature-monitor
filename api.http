@@ -1,4 +1,4 @@
-@host = blackbox.nidus:8080
+@host = rpi.nidus:8080
 
 ###
 

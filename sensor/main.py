@@ -10,7 +10,7 @@ import urandom
 ssid = ""
 password = ""
 
-ingestion_url = "http://blackbox.nidus:8080/sensor/ingest"
+ingestion_url = "http://rpi.nidus:8080/sensor/ingest"
 
 sensing_period_seconds = 5
 
