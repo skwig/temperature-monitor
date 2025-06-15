@@ -1,8 +1,9 @@
 apiVersion: 1
 
 datasources:
-  - name: Infinity
+  - name: Temperature Monitor API
     type: yesoreyeram-infinity-datasource
+    uid: tempmonapi
+    url: $INFINITY_URL
     access: proxy
     isDefault: true
-    url: $INFINITY_URL

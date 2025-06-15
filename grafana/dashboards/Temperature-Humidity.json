@@ -24,7 +24,7 @@
     {
       "datasource": {
         "type": "yesoreyeram-infinity-datasource",
-        "uid": "aeoyjud63sdtsd"
+        "uid": "tempmonapi"
       },
       "fieldConfig": {
         "defaults": {
@@ -162,7 +162,7 @@
           "columns": [],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
-            "uid": "aeoyjud63sdtsd"
+            "uid": "tempmonapi"
           },
           "filters": [],
           "format": "timeseries",
@@ -221,4 +221,3 @@
   "uid": "6b8e8a07-2610-4a54-8cb3-b840126ed637",
   "version": 6
 }
-
